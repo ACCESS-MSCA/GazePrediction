@@ -1,0 +1,499 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		DD06E6F22D5F78FB002C8BDF /* time_series.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = DD06E6F12D5F78FB002C8BDF /* time_series.mlpackage */; };
+		DD3537952CC1496500823949 /* tsmixer.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = DD3537942CC1496500823949 /* tsmixer.mlpackage */; };
+		DD36E9692DA015A900E90654 /* saliency.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = DD36E9682DA015A900E90654 /* saliency.mlpackage */; };
+		DD73C4ED2CC7DB450041A755 /* unisal_1img_rgb.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = DD73C4EC2CC7DB450041A755 /* unisal_1img_rgb.mlpackage */; };
+		DDC0CEF42D68D31A00B58E63 /* saliency_validated.mlpackage in Sources */ = {isa = PBXBuildFile; fileRef = DDC0CEF32D68D31A00B58E63 /* saliency_validated.mlpackage */; };
+		DDC626BA2C99D1BD003E1030 /* RealityKitContent in Frameworks */ = {isa = PBXBuildFile; productRef = DDC626B92C99D1BD003E1030 /* RealityKitContent */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		DDC626CA2C99D1BE003E1030 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = DDC626AC2C99D1BD003E1030 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = DDC626B32C99D1BD003E1030;
+			remoteInfo = "coreml-gazePred";
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXFileReference section */
+		DD06E6F12D5F78FB002C8BDF /* time_series.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = time_series.mlpackage; sourceTree = "<group>"; };
+		DD3537942CC1496500823949 /* tsmixer.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = tsmixer.mlpackage; sourceTree = "<group>"; };
+		DD36E9682DA015A900E90654 /* saliency.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = saliency.mlpackage; sourceTree = "<group>"; };
+		DD73C4EC2CC7DB450041A755 /* unisal_1img_rgb.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = unisal_1img_rgb.mlpackage; sourceTree = "<group>"; };
+		DDC0CEF32D68D31A00B58E63 /* saliency_validated.mlpackage */ = {isa = PBXFileReference; lastKnownFileType = folder.mlpackage; path = saliency_validated.mlpackage; sourceTree = "<group>"; };
+		DDC626B42C99D1BD003E1030 /* coreml-gazePred.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "coreml-gazePred.app"; sourceTree = BUILT_PRODUCTS_DIR; };
+		DDC626B82C99D1BD003E1030 /* RealityKitContent */ = {isa = PBXFileReference; lastKnownFileType = wrapper; path = RealityKitContent; sourceTree = "<group>"; };
+		DDC626C92C99D1BE003E1030 /* coreml-gazePredTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "coreml-gazePredTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		DDC626CF2C99D1BE003E1030 /* Exceptions for "coreml-gazePred" folder in "coreml-gazePred" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = DDC626B32C99D1BD003E1030 /* coreml-gazePred */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		DDC626B62C99D1BD003E1030 /* coreml-gazePred */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				DDC626CF2C99D1BE003E1030 /* Exceptions for "coreml-gazePred" folder in "coreml-gazePred" target */,
+			);
+			path = "coreml-gazePred";
+			sourceTree = "<group>";
+		};
+		DDC626CC2C99D1BE003E1030 /* coreml-gazePredTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = "coreml-gazePredTests";
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		DDC626B12C99D1BD003E1030 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDC626BA2C99D1BD003E1030 /* RealityKitContent in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDC626C62C99D1BE003E1030 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		DDC626AB2C99D1BD003E1030 = {
+			isa = PBXGroup;
+			children = (
+				DDC626B62C99D1BD003E1030 /* coreml-gazePred */,
+				DDC626B72C99D1BD003E1030 /* Packages */,
+				DDC626CC2C99D1BE003E1030 /* coreml-gazePredTests */,
+				DDC626B52C99D1BD003E1030 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		DDC626B52C99D1BD003E1030 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				DDC626B42C99D1BD003E1030 /* coreml-gazePred.app */,
+				DDC626C92C99D1BE003E1030 /* coreml-gazePredTests.xctest */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		DDC626B72C99D1BD003E1030 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				DDC626B82C99D1BD003E1030 /* RealityKitContent */,
+				DD3537942CC1496500823949 /* tsmixer.mlpackage */,
+				DD73C4EC2CC7DB450041A755 /* unisal_1img_rgb.mlpackage */,
+				DD06E6F12D5F78FB002C8BDF /* time_series.mlpackage */,
+				DD36E9682DA015A900E90654 /* saliency.mlpackage */,
+				DDC0CEF32D68D31A00B58E63 /* saliency_validated.mlpackage */,
+			);
+			path = Packages;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		DDC626B32C99D1BD003E1030 /* coreml-gazePred */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DDC626D02C99D1BE003E1030 /* Build configuration list for PBXNativeTarget "coreml-gazePred" */;
+			buildPhases = (
+				DDC626B02C99D1BD003E1030 /* Sources */,
+				DDC626B12C99D1BD003E1030 /* Frameworks */,
+				DDC626B22C99D1BD003E1030 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				DDC626B62C99D1BD003E1030 /* coreml-gazePred */,
+			);
+			name = "coreml-gazePred";
+			packageProductDependencies = (
+				DDC626B92C99D1BD003E1030 /* RealityKitContent */,
+			);
+			productName = "coreml-gazePred";
+			productReference = DDC626B42C99D1BD003E1030 /* coreml-gazePred.app */;
+			productType = "com.apple.product-type.application";
+		};
+		DDC626C82C99D1BE003E1030 /* coreml-gazePredTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = DDC626D52C99D1BE003E1030 /* Build configuration list for PBXNativeTarget "coreml-gazePredTests" */;
+			buildPhases = (
+				DDC626C52C99D1BE003E1030 /* Sources */,
+				DDC626C62C99D1BE003E1030 /* Frameworks */,
+				DDC626C72C99D1BE003E1030 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				DDC626CB2C99D1BE003E1030 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				DDC626CC2C99D1BE003E1030 /* coreml-gazePredTests */,
+			);
+			name = "coreml-gazePredTests";
+			packageProductDependencies = (
+			);
+			productName = "coreml-gazePredTests";
+			productReference = DDC626C92C99D1BE003E1030 /* coreml-gazePredTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		DDC626AC2C99D1BD003E1030 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1600;
+				LastUpgradeCheck = 1600;
+				TargetAttributes = {
+					DDC626B32C99D1BD003E1030 = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					DDC626C82C99D1BE003E1030 = {
+						CreatedOnToolsVersion = 16.0;
+						TestTargetID = DDC626B32C99D1BD003E1030;
+					};
+				};
+			};
+			buildConfigurationList = DDC626AF2C99D1BD003E1030 /* Build configuration list for PBXProject "coreml-gazePred" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = DDC626AB2C99D1BD003E1030;
+			minimizedProjectReferenceProxies = 1;
+			preferredProjectObjectVersion = 77;
+			productRefGroup = DDC626B52C99D1BD003E1030 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				DDC626B32C99D1BD003E1030 /* coreml-gazePred */,
+				DDC626C82C99D1BE003E1030 /* coreml-gazePredTests */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		DDC626B22C99D1BD003E1030 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDC626C72C99D1BE003E1030 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		DDC626B02C99D1BD003E1030 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				DDC0CEF42D68D31A00B58E63 /* saliency_validated.mlpackage in Sources */,
+				DD06E6F22D5F78FB002C8BDF /* time_series.mlpackage in Sources */,
+				DD73C4ED2CC7DB450041A755 /* unisal_1img_rgb.mlpackage in Sources */,
+				DD36E9692DA015A900E90654 /* saliency.mlpackage in Sources */,
+				DD3537952CC1496500823949 /* tsmixer.mlpackage in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		DDC626C52C99D1BE003E1030 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		DDC626CB2C99D1BE003E1030 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = DDC626B32C99D1BD003E1030 /* coreml-gazePred */;
+			targetProxy = DDC626CA2C99D1BE003E1030 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
+/* Begin XCBuildConfiguration section */
+		DDC626D12C99D1BE003E1030 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"coreml-gazePred/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "libramli.ai.coreml-gazePred";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+			};
+			name = Debug;
+		};
+		DDC626D22C99D1BE003E1030 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_ASSET_PATHS = "\"coreml-gazePred/Preview Content\"";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = "$(TARGET_NAME)/Info.plist";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "libramli.ai.coreml-gazePred";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+			};
+			name = Release;
+		};
+		DDC626D32C99D1BE003E1030 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = xros;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				XROS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Debug;
+		};
+		DDC626D42C99D1BE003E1030 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++20";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu17;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				SDKROOT = xros;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				VALIDATE_PRODUCT = YES;
+				XROS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Release;
+		};
+		DDC626D62C99D1BE003E1030 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "libramli.ai.coreml-gazePredTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/coreml-gazePred.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/coreml-gazePred";
+				XROS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Debug;
+		};
+		DDC626D72C99D1BE003E1030 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				GENERATE_INFOPLIST_FILE = YES;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "libramli.ai.coreml-gazePredTests";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SUPPORTED_PLATFORMS = "xros xrsimulator";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 7;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/coreml-gazePred.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/coreml-gazePred";
+				XROS_DEPLOYMENT_TARGET = 2.0;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		DDC626AF2C99D1BD003E1030 /* Build configuration list for PBXProject "coreml-gazePred" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDC626D32C99D1BE003E1030 /* Debug */,
+				DDC626D42C99D1BE003E1030 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DDC626D02C99D1BE003E1030 /* Build configuration list for PBXNativeTarget "coreml-gazePred" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDC626D12C99D1BE003E1030 /* Debug */,
+				DDC626D22C99D1BE003E1030 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		DDC626D52C99D1BE003E1030 /* Build configuration list for PBXNativeTarget "coreml-gazePredTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				DDC626D62C99D1BE003E1030 /* Debug */,
+				DDC626D72C99D1BE003E1030 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		DDC626B92C99D1BD003E1030 /* RealityKitContent */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = RealityKitContent;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = DDC626AC2C99D1BD003E1030 /* Project object */;
+}
