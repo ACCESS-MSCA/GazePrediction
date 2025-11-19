@@ -1,6 +1,7 @@
 
 # GazePrediction
 ![Example GIF](imgs/access_gaze.gif)
+
 GazePrediction: a compact codebase for video gaze prediction using saliency (UNISAL) + temporal models (TSMixer / Conv-LSTM), training, inference, CoreML export and an example iOS app.
 
 ## Overview
