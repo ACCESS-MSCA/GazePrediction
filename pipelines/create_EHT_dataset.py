@@ -8,6 +8,9 @@ import numpy as np
 import pandas as pd
 import cv2
 import sys
+# Add project root to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+import core.utils as utils
 
 from multiprocessing import Process
 

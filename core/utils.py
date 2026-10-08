@@ -8,7 +8,7 @@ import numpy as np
 import torch
 import unisal.unisal
 from torchvision import transforms
-from models import Conv_tsmixer, WrappedUNISAL, Conv_LSTM
+from .models import Conv_tsmixer, WrappedUNISAL, Conv_LSTM
 
 # Convert the degrees to the range [0, 360]
 def convert_hor_degree(degrees):

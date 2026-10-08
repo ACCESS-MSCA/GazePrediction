@@ -1,0 +1,4 @@
+--name e6_lobo0_dual20 --task_weight 20 --seed 0 --exclude_task 0
+--name e6_lobo1_dual20 --task_weight 20 --seed 0 --exclude_task 1
+--name e6_lobo2_dual20 --task_weight 20 --seed 0 --exclude_task 2
+--name e6_lobo3_dual20 --task_weight 20 --seed 0 --exclude_task 3

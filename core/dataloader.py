@@ -7,7 +7,7 @@ from glob import glob
 import torch
 from torch.utils.data import Dataset, DataLoader
 import random
-import utils
+from . import utils
 
 class GazePredDataset(Dataset):
     def __init__(
@@ -32,9 +32,11 @@ class GazePredDataset(Dataset):
     def __getitem__(self, idx):
         video_path = self.video_paths[idx]
         frames = []
+        org_frames = []
         head_positions = []
         prediction_sequences = []
         filenames = []
+        tasks = []
         # load json metadata
         json_meta_path = os.path.splitext(video_path)[0] + ".json"
         if os.path.exists(video_path) and os.path.exists(json_meta_path):
@@ -54,25 +56,36 @@ class GazePredDataset(Dataset):
             giw_horz = metadata["giw_long"].to_numpy()
             giw_vert = metadata["giw_lat"].to_numpy()
             filename = metadata["cropped_frame_filename"].to_numpy()[0]
-            # start frame extraction
+            task_id = metadata["task_id"].to_numpy()[0]
+            # start frame extraction - Read once into memory
             cap = cv2.VideoCapture(video_path)
+            all_frames_in_vid = []
+            while True:
+                ret, frame_org = cap.read()
+                if not ret:
+                    break
+                # Pre-process saliency input immediately to save memory and time later
+                all_frames_in_vid.append(utils.preprocess_sal_img(frame_org))
+            cap.release()
+            
+            if not all_frames_in_vid:
+                return None
+
             # fnmber is the present frame
             for fnumber in range(
                 self.past_timepoints,
                 len(metadata) - self.future_timepoints,
                 self.sliding_window,
             ):
-                images_seq = []
-                # Gather frames
-                # Present frame is taken last from the for loop
-                for i in reversed(range(self.past_timepoints)):
-                    cap.set(cv2.CAP_PROP_POS_FRAMES, fnumber - i)
-                    ret, frame = cap.read()
-                    if not ret:
-                        print("Failed to grab frame")
-                        break
-                    frame = utils.preprocess_sal_img(frame)
-                    images_seq.append(frame)
+                # Gather frames from pre-loaded list and stack into a tensor
+                seq_tensors = all_frames_in_vid[fnumber - self.past_timepoints : fnumber]
+                
+                # Check if we have enough frames
+                if len(seq_tensors) < self.past_timepoints:
+                    continue
+                
+                images_seq = torch.stack(seq_tensors)
+                
                 # Gather hmd potional metadata
                 hmd_seq = list(
                     zip(
@@ -103,27 +116,31 @@ class GazePredDataset(Dataset):
                 head_positions.append(hmd_seq)
                 prediction_sequences.append(pred_seq)
                 filenames.extend([filename])
-            cap.release()
+                tasks.append(task_id - 1)
+            
             return (
-                torch.tensor(np.array(frames), dtype=torch.float32),
-                torch.tensor(np.array(head_positions), dtype=torch.float32),
-                torch.tensor(np.array(prediction_sequences), dtype=torch.float32),
-                np.array(filenames, dtype=str)
+                torch.stack(frames) if frames else None,
+                torch.tensor(np.array(head_positions), dtype=torch.float32) if head_positions else None,
+                torch.tensor(np.array(prediction_sequences), dtype=torch.float32) if prediction_sequences else None,
+                np.array(filenames, dtype=str) if filenames else None,
+                torch.tensor(np.array(tasks), dtype=torch.long) if tasks else None,
             )
 
 
 def collate_fn(batch, minibatch=16, shuffle=False):
     # Filter out None samples
-    batch = [sample for sample in batch if sample is not None]
+    batch = [sample for sample in batch if sample is not None and sample[0] is not None]
     if len(batch) == 0:
         return None  # Return None if all samples are None
 
-    frames_batch, head_positions_batch, predictions, filename = zip(*batch)
+    frames_batch, head_positions_batch, predictions, filename, tasks_batch = zip(*batch)
     # Flatten the first dimension
     frames_flat = torch.cat(frames_batch, dim=0)
     head_positions_flat = torch.cat(head_positions_batch, dim=0)
     predictions_flat = torch.cat(predictions, dim=0)
     filenames_flat = np.concatenate(filename)
+    tasks_flat = torch.cat(tasks_batch, dim=0)
+    
     if shuffle:
         # Shuffle the flattened data
         indices = torch.randperm(frames_flat.size(0))
@@ -131,13 +148,16 @@ def collate_fn(batch, minibatch=16, shuffle=False):
         head_positions_flat = head_positions_flat[indices]
         predictions_flat = predictions_flat[indices]
         filenames_flat = filenames_flat[indices]
+        tasks_flat = tasks_flat[indices]
+        
     # Split batch into chunks of batch_size
     batches = [
         [
             frames_flat[i : i + minibatch],
             head_positions_flat[i : i + minibatch],
             predictions_flat[i : i + minibatch],
-            filenames_flat[i : i + minibatch]
+            filenames_flat[i : i + minibatch],
+            tasks_flat[i : i + minibatch],
         ]
         for i in range(0, len(frames_flat), minibatch)
     ]

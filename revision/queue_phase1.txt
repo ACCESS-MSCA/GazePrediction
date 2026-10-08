@@ -1,0 +1,19 @@
+--name e1_gaze_s0 --task_weight 0 --seed 0
+--name e1_dual100_s0 --task_weight 100 --seed 0
+--name e1_gaze_s1 --task_weight 0 --seed 1
+--name e1_dual100_s1 --task_weight 100 --seed 1
+--name e1_gaze_s2 --task_weight 0 --seed 2
+--name e1_dual100_s2 --task_weight 100 --seed 2
+--name e2_dual0.5_s0 --task_weight 0.5 --seed 0
+--name e2_dual2_s0 --task_weight 2 --seed 0
+--name e2_dual10_s0 --task_weight 10 --seed 0
+--name e2_dual20_s0 --task_weight 20 --seed 0
+--name e3_isvc_q10_s0 --task_weight 0 --seed 0 --future 10
+--name e6_lobo0_dual100 --task_weight 100 --seed 0 --exclude_task 0
+--name e6_lobo1_dual100 --task_weight 100 --seed 0 --exclude_task 1
+--name e6_lobo2_dual100 --task_weight 100 --seed 0 --exclude_task 2
+--name e6_lobo3_dual100 --task_weight 100 --seed 0 --exclude_task 3
+--name e6_lobo0_gaze --task_weight 0 --seed 0 --exclude_task 0
+--name e6_lobo1_gaze --task_weight 0 --seed 0 --exclude_task 1
+--name e6_lobo2_gaze --task_weight 0 --seed 0 --exclude_task 2
+--name e6_lobo3_gaze --task_weight 0 --seed 0 --exclude_task 3

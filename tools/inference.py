@@ -11,11 +11,11 @@ from tqdm import tqdm
 import random
 import torch
 import sys
+# Add project root to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from train import SphericalMSELoss
-
-sys.path.append("..")
-
-import utils
+import core.utils as utils
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -204,9 +204,23 @@ for idx_video, raw_video in enumerate(raw_video_path):
         )
 
         # Load saliency maps
-        with torch.no_grad():
-            sal_frame = unisal_model(frame_tensor.to(device))
-        sal_frames.append(sal_frame.squeeze().squeeze())
+        if args.saliency_sampling > 1:
+            # We only calculate a new saliency if (i % sampling == 0)
+            # and then we keep using it for the next sampling-1 steps.
+            # But the 'sal_frames' list needs to represent the sliding window correctly.
+            if i % args.saliency_sampling == 0:
+                with torch.no_grad():
+                    sal_frame = unisal_model(frame_tensor.to(device))
+                current_sal = sal_frame.squeeze().squeeze()
+            else:
+                # current_sal remains the same from the last valid sampling point
+                pass
+            sal_frames.append(current_sal)
+        else:
+            with torch.no_grad():
+                sal_frame = unisal_model(frame_tensor.to(device))
+            sal_frames.append(sal_frame.squeeze().squeeze())
+
         if len(sal_frames)>timepoints:
             sal_frames.pop(0)
 

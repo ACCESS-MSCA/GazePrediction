@@ -171,3 +171,13 @@ trained_models_combined/
 backup_scripts/
 notebooks/
 models/coreml_conv_lstm_past_15_future_10_window_15_20250113_182736/
+inference_results/
+experiments/
+logs/
+
+# Journal revision (revision/): keep scripts, summary results and split files;
+# per-window outputs (~1 GB), checkpoints and logs stay local.
+!revision/results/
+revision/results/per_window/
+revision/runs/
+revision/logs/

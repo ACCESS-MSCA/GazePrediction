@@ -16,8 +16,10 @@ class Conv_tsmixer(nn.Module):
         sequence_length,
         prediction_length,
         prediction_features,
+        num_classes=4,
         image_kernel_size=5,  # Default kernel size for convolutions
         image_padding=0,
+        use_task_output=False,
     ):
         super(Conv_tsmixer, self).__init__()
 
@@ -46,49 +48,54 @@ class Conv_tsmixer(nn.Module):
             output_channels=prediction_features,
         )
         self.sal_emb_length = conv_output_embeddings
+        
+        self.use_task_output = use_task_output
+        if self.use_task_output:
+            # ORIGINAL HEAD (Commented out)
+            # self.fc_task = nn.Linear(prediction_features*prediction_length, num_classes)
+            
+            # IMPROVED HEAD: Deep MLP with BatchNorm and Dropout
+            self.task_head = nn.Sequential(
+                nn.Linear(conv_output_embeddings + num_time_features, 128),
+                nn.BatchNorm1d(128),
+                nn.ReLU(),
+                nn.Dropout(0.3),
+                nn.Linear(128, 64),
+                nn.ReLU(),
+                nn.Linear(64, num_classes)
+            )
 
     def forward(self, image, time_series):
-        # Image processing for each image (separate branches)
-        batch_size = image.size(0)
-        num_images = image.size(1)
-        num_time_steps = time_series.size(1)
-
-        image_features = []
-        for i in range(num_images):  # Process each image in the batch
-            img = image[:, i, :, :]  # Select the ith image
-            img = img.unsqueeze(1)  # Add channel dimension
-            x = F.interpolate(img, size=(25, 25))  # Resize
-            x = self.pool(F.relu(self.bn1(self.conv1(x))))
-            x = self.pool(F.relu(self.bn2(self.conv2(x))))
-            x = x.view(batch_size, -1)  # Flatten
-            x = self.Dropout(F.relu(self.fc1(x)))
-            # Expand features to match time series length and concatenate with time series data
-            image_features.append(x.unsqueeze(1))
-        img_features = torch.cat(image_features, dim=1)
-        # print(img_features.shape)
-
-        # linspace_imgs_to_time_series = torch.linspace(
-        #     0, num_time_steps, num_images + 1, dtype=torch.int
-        # )
-        # features = torch.zeros(
-        #     batch_size, num_time_steps, self.sal_emb_length, device=device
-        # )
-
-        # # Copy the slices from A to the appropriate ranges in B
-        # for i in range(num_images):
-        #     start_idx = linspace_imgs_to_time_series[i]
-        #     end_idx = linspace_imgs_to_time_series[i + 1]
-        #     features[:, start_idx:end_idx, :] = (
-        #         img_features[:, i, :].unsqueeze(1).repeat(1, end_idx - start_idx, 1)
-        #     )
-
-        # print(features.shape)  # Should print torch.Size([8, 15, 10])
+        batch_size, num_images, _, _, H, W = image.shape
+        
+        # Reshape to remove the extra dimensions and process all images at once
+        image_reshaped = image.view(batch_size * num_images, 1, H, W)
+        
+        # Process all images in batch
+        x = F.interpolate(image_reshaped, size=(25, 25))
+        x = self.pool(F.relu(self.bn1(self.conv1(x))))
+        x = self.pool(F.relu(self.bn2(self.conv2(x))))
+        x = x.view(batch_size * num_images, -1)  # Flatten
+        x = self.Dropout(F.relu(self.fc1(x)))
+        
+        # Reshape back to separate images per batch
+        img_features = x.view(batch_size, num_images, -1)
         # Concatenate time series data with features from all images
         combined_features = torch.cat((time_series, img_features), dim=2)
         # print(combined_features.shape)
         # # Pass the concatenated features through the TSMixer
-        output = self.tsmixer(combined_features)
-        return output
+        gaze_output = self.tsmixer(combined_features)
+
+        if self.use_task_output:
+            # ORIGINAL LOGIC (Commented out)
+            # task_output = self.fc_task(gaze_output.view(batch_size, -1))
+            
+            # IMPROVED LOGIC: Temporal average pooling across the window
+            task_features = torch.mean(combined_features, dim=1) 
+            task_output = self.task_head(task_features)
+            return gaze_output, task_output
+        
+        return gaze_output
     
 # Define the LSTM module
 class Conv_LSTM(nn.Module):
@@ -99,10 +106,12 @@ class Conv_LSTM(nn.Module):
         sequence_length,
         prediction_length,
         prediction_features,
+        num_classes=4,
         image_kernel_size=5,  # Default kernel size for convolutions
         image_padding=0,
         lstm_hidden_size=128,  # Hidden size for LSTM
         lstm_num_layers=1,     # Number of LSTM layers
+        use_task_output=False,
     ):
         super(Conv_LSTM, self).__init__()
 
@@ -137,31 +146,55 @@ class Conv_LSTM(nn.Module):
         self.future_steps = prediction_length
         self.prediction_features = prediction_features
 
+        self.use_task_output = use_task_output
+        if self.use_task_output:
+            # ORIGINAL HEAD (Commented out)
+            # self.fc_task = nn.Linear(lstm_hidden_size, num_classes)
+            
+            # IMPROVED HEAD: Deep MLP with BatchNorm and Dropout
+            self.task_head = nn.Sequential(
+                nn.Linear(lstm_hidden_size, 128),
+                nn.BatchNorm1d(128),
+                nn.ReLU(),
+                nn.Dropout(0.3),
+                nn.Linear(128, 64),
+                nn.ReLU(),
+                nn.Linear(64, num_classes)
+            )
+        
     def forward(self, image, time_series):
-        # Image processing for each image (separate branches)
-        batch_size = image.size(0)
-        num_images = image.size(1)
-        num_time_steps = time_series.size(1)
-
-        image_features = []
-        for i in range(num_images):  # Process each image in the batch
-            img = image[:, i, :, :]  # Select the ith image
-            img = img.unsqueeze(1)  # Add channel dimension
-            x = F.interpolate(img, size=(25, 25))  # Resize
-            x = self.pool(F.relu(self.bn1(self.conv1(x))))
-            x = self.pool(F.relu(self.bn2(self.conv2(x))))
-            x = x.view(batch_size, -1)  # Flatten
-            x = self.Dropout(F.relu(self.fc1(x)))
-            # Expand features to match time series length and concatenate with time series data
-            image_features.append(x.unsqueeze(1))
-        img_features = torch.cat(image_features, dim=1)
+        batch_size, num_images, _, _, H, W = image.shape
+        
+        # Reshape to remove the extra dimensions and process all images at once
+        image_reshaped = image.view(batch_size * num_images, 1, H, W)
+        
+        # Process all images in batch
+        x = F.interpolate(image_reshaped, size=(25, 25))
+        x = self.pool(F.relu(self.bn1(self.conv1(x))))
+        x = self.pool(F.relu(self.bn2(self.conv2(x))))
+        x = x.view(batch_size * num_images, -1)  # Flatten
+        x = self.Dropout(F.relu(self.fc1(x)))
+        
+        # Reshape back to separate images per batch
+        img_features = x.view(batch_size, num_images, -1)
+        
         # Concatenate time series data with features from all images
         combined_features = torch.cat((time_series, img_features), dim=2)
-
-        _, (h_n, _) = self.lstm(combined_features)
+        
+        lstm_out, (h_n, _) = self.lstm(combined_features)
         last_hidden = h_n[-1]  # Use the hidden state of the last LSTM layer
-        output = self.fc_output(last_hidden)  # Predict all future steps at once
-        return output.view(-1, self.future_steps, self.prediction_features)
+        gaze_output = self.fc_output(last_hidden)  # Predict all future steps at once
+        
+        if self.use_task_output:
+            # ORIGINAL LOGIC (Commented out)
+            # task_output = self.fc_task(last_hidden)
+            
+            # IMPROVED LOGIC: Temporal average pooling across all LSTM outputs
+            task_features = torch.mean(lstm_out, dim=1)
+            task_output = self.task_head(task_features)
+            return gaze_output.view(-1, self.future_steps, self.prediction_features), task_output
+        
+        return gaze_output.view(-1, self.future_steps, self.prediction_features)
 
 class InputWrapper(nn.Module):
     def forward(self, x):

@@ -10,10 +10,9 @@ import random
 random.seed(42)
 import os
 from datetime import datetime
-from utils import load_unisal
-
-from dataloader import get_dataloader
-from models import Conv_tsmixer, Conv_LSTM
+from core.utils import load_unisal
+from core.dataloader import get_dataloader
+from core.models import Conv_tsmixer, Conv_LSTM
 
 import warnings
 # warnings.filterwarnings("ignore", category=FutureWarning)
@@ -118,8 +117,8 @@ def get_args():
     # Training parameters
     parser.add_argument('--batch_size', type=int, default=16, help='Batch size for training')
     parser.add_argument('--minibatch', type=int, default=32, help='Size of each minibatch')
-    parser.add_argument('--num_workers', type=int, default=8, help='Number of worker threads for data loading')
-    parser.add_argument('--num_epochs', type=int, default=20, help='Number of epochs for training')
+    parser.add_argument('--num_workers', type=int, default=4, help='Number of worker threads for data loading')
+    parser.add_argument('--num_epochs', type=int, default=10, help='Number of epochs for training')
     parser.add_argument('--reduce_lr_patience', type=int, default=5, help='Patience for reducing learning rate')
     parser.add_argument('--lr', type=float, default=0.001, help='Learning rate')
     parser.add_argument('--early_stopping_patience', type=int, default=8, help='Patience for early stopping rate')
@@ -132,6 +131,10 @@ def get_args():
     parser.add_argument('--lstm_hidden_states', type=int, default=32, help='if use lstm set up the lstm hidden states')
     parser.add_argument('--lstm_layers', type=int, default=1, help='if use lstm set up the lstm layers')
     parser.add_argument('--previous_run_weights', type=str, default=None, help='if you want to resume a previous run, put the weights path.')
+    parser.add_argument('--task_weight', type=float, default=0.5, help='Weight for the task classification loss.')
+    parser.add_argument('--use_task_output', action='store_true', help='Use task classification as a second output.')
+    parser.add_argument('--model_dir', type=str, default='trained_models_combined', help='Directory to save trained models.')
+    parser.add_argument('--saliency_sampling', type=int, default=1, help='Sample saliency every N frames.')
     return parser.parse_args()
 
 
@@ -140,22 +143,47 @@ def load_dataloaders(dataset_path, batch_size, minibatch, num_workers, past_time
     vd_paths_srt = natsorted(
         glob(os.path.join(dataset_path,"**","**","*.mp4"))
     )
+    
+    # Define hardcoded test folders (EHT specific)
     test_parent_folder = (
         os.path.join(dataset_path,"Video_8","User_8_Task_1"),
-        os.path.join(dataset_path,"Video_1","User_26_Task_1")
+        os.path.join(dataset_path,"Video_8","User_13_Task_1"),
+        os.path.join(dataset_path,"Video_1","User_26_Task_1"),
+        os.path.join(dataset_path,"Video_1","User_1_Task_1"),
+        os.path.join(dataset_path,"Video_10","User_4_Task_1"),
+        os.path.join(dataset_path,"Video_10","User_9_Task_1"),
     )
 
-    # Split the video paths into training and validation sets
+    # Try to identify hardcoded test videos
     test_vd_path = [
         path for path in vd_paths_srt if path.startswith(test_parent_folder)
     ]
-    vd_paths = [
-        path for path in vd_paths_srt if not path.startswith(test_parent_folder)
-    ]
     
-    train_vd_paths = vd_paths[: int(0.8 * len(vd_paths))]
-    random.shuffle(train_vd_paths)
-    val_vd_paths = vd_paths[int(0.8 * len(vd_paths)) :]
+    if test_vd_path:
+        # If hardcoded folders exist, exclude them from training/val
+        print(f"Found {len(test_vd_path)} hardcoded test sequences. Reserving them.")
+        remaining_paths = [
+            path for path in vd_paths_srt if not path.startswith(test_parent_folder)
+        ]
+        random.shuffle(remaining_paths)
+        train_end = int(0.8 * len(remaining_paths))
+        train_vd_paths = remaining_paths[:train_end]
+        val_vd_paths = remaining_paths[train_end:]
+    else:
+        # Fallback to pure percentage split for other datasets (like DSAV360)
+        print("No hardcoded test folders found. Using percentage-based split (70/15/15).")
+        random.seed(42)
+        shuffled_paths = vd_paths_srt.copy()
+        random.shuffle(shuffled_paths)
+        total = len(shuffled_paths)
+        train_end = int(0.7 * total)
+        val_end = int(0.85 * total)
+        
+        train_vd_paths = shuffled_paths[:train_end]
+        val_vd_paths = shuffled_paths[train_end:val_end]
+        test_vd_path = shuffled_paths[val_end:]
+
+    print(f"Dataset split summary: Train={len(train_vd_paths)}, Val={len(val_vd_paths)}, Test={len(test_vd_path)}")
 
     train_dataloader = get_dataloader(
         train_vd_paths, 
@@ -226,17 +254,28 @@ def main():
     args = get_args()
     
     # Create directory for saving models
-    model_dir = 'trained_models_combined'
+    model_dir = args.model_dir
     os.makedirs(model_dir, exist_ok=True)
     
     if args.previous_run_weights is None:
-        exp_name = f'conv_{args.select_time_model}_past_{args.past_timepoints}_future_{args.future_timepoints}_window_{args.sliding_window}_{datetime.now().strftime("%Y%m%d_%H%M%S")}'
+        exp_name = f'conv_{args.select_time_model}_past_{args.past_timepoints}_future_{args.future_timepoints}_window_{args.sliding_window}_samp{args.saliency_sampling}_{datetime.now().strftime("%Y%m%d_%H%M%S")}'
         os.makedirs(os.path.join(model_dir, exp_name), exist_ok=True)
         save_args_to_json(args, os.path.join(model_dir,exp_name,exp_name+'.json'))
     else:
         exp_name = args.previous_run_weights.split(os.sep)[-2]
         os.makedirs(os.path.join(model_dir, exp_name), exist_ok=True)
-    
+        # Update existing config with current saliency_sampling if resuming
+        config_path = os.path.join(model_dir, exp_name, exp_name+'.json')
+        if os.path.exists(config_path):
+            with open(config_path, 'r') as f:
+                config = json.load(f)
+            config['saliency_sampling'] = args.saliency_sampling
+            with open(config_path, 'w') as f:
+                json.dump(config, f, indent=4)
+    #print args to console
+    print(f"Experiment Name: {exp_name}")
+    print(f"Arguments: {args}")
+
     # Initialize unisal
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     
@@ -250,6 +289,7 @@ def main():
             args.past_timepoints,
             args.future_timepoints,
             args.prediction_features,
+            use_task_output=args.use_task_output
         ).to(device)
     elif args.select_time_model =='lstm':
         time_model = Conv_LSTM(
@@ -259,11 +299,14 @@ def main():
             args.future_timepoints,
             args.prediction_features,
             lstm_hidden_size=args.lstm_hidden_states,
-            lstm_num_layers=args.lstm_layers
+            lstm_num_layers=args.lstm_layers,
+            use_task_output=args.use_task_output
         ).to(device)
     
-    if args.previous_run_weights is not None:
-        time_model.load_state_dict(torch.load(args.previous_run_weights))
+    if args.previous_run_weights:
+        # Load weights with strict=False to accommodate models without task layers
+        time_model.load_state_dict(torch.load(args.previous_run_weights), strict=False)
+
     
     # Define your vd_paths
 
@@ -275,7 +318,8 @@ def main():
     # TensorBoard writer
     writer = SummaryWriter()
     # Loss function and optimizer
-    criterion = SphericalMSELoss('mean')
+    criterion_gaze = SphericalMSELoss('mean')
+    criterion_task = nn.CrossEntropyLoss()
     optimizer = optim.Adam(time_model.parameters(), lr=args.lr)
     best_val_loss = float("inf")
     scheduler = ReduceLROnPlateau(
@@ -288,19 +332,39 @@ def main():
         best_val_loss = float(args.previous_run_weights.split('_')[-1].split('.pth')[0])
     else:
         starting_epoch = 0
+    import sys
     for epoch in tqdm(range(starting_epoch, args.num_epochs)):
-        epoch_loss = 0.0
+        epoch_gaze_loss = 0.0
+        epoch_task_loss = 0.0
+        epoch_task_accuracy = 0.0
         len_train_dataloader = 0
-        train_progress_bar =  tqdm(train_dataloader)
+        
+        # Smart progress bar: Use tqdm for TTY, simple logger for files
+        is_tty = sys.stdout.isatty()
+        train_progress_bar = tqdm(train_dataloader, mininterval=10.0, ascii=True, desc=f"Epoch {epoch+1} [Train]") if is_tty else train_dataloader
+        
         time_model.train()
-        for batch in train_progress_bar:
+        for i, batch in enumerate(train_progress_bar):
             if batch is None: continue
-            for images, timeseries, gt_gaze, _ in batch:
+            
+            # Manual logging for file-based runs
+            if not is_tty and i % 50 == 0:
+                running_mse = epoch_gaze_loss / max(1, len_train_dataloader)
+                running_rmse = math.sqrt(running_mse)
+                if args.use_task_output:
+                    running_task_loss = epoch_task_loss / max(1, len_train_dataloader)
+                    running_task_acc = epoch_task_accuracy / max(1, len_train_dataloader)
+                    print(f"Epoch {epoch+1} [Train] - Batch {i}/{len(train_dataloader)} - Gaze MSE: {running_mse:.4f}, RMSE: {running_rmse:.4f}, Task Loss: {running_task_loss:.4f}, Task Acc: {running_task_acc:.4f}", flush=True)
+                else:
+                    print(f"Epoch {epoch+1} [Train] - Batch {i}/{len(train_dataloader)} - Gaze MSE: {running_mse:.4f}, RMSE: {running_rmse:.4f}", flush=True)
+
+            for images, timeseries, gt_gaze, _, gt_task in batch:
                 
-                images, timeseries, gt_gaze = (
+                images, timeseries, gt_gaze, gt_task = (
                     images.to(device),
                     timeseries.to(device),
                     gt_gaze.to(device),
+                    gt_task.to(device),
                 )
                 
                 output_list = []
@@ -316,76 +380,167 @@ def main():
 
                 # Zero the parameter gradients
                 optimizer.zero_grad()
-                outputs = time_model(stacked_sal_preds, timeseries)
                 
                 # Forward pass
-                loss = criterion(outputs, gt_gaze)
+                if args.use_task_output:
+                    gaze_outputs, task_outputs = time_model(stacked_sal_preds, timeseries)
+                    gaze_loss = criterion_gaze(gaze_outputs, gt_gaze)
+                    task_loss = criterion_task(task_outputs, gt_task)
+                    loss = gaze_loss + args.task_weight * task_loss
+                    
+                    epoch_task_loss += task_loss.item()
+                    _, predicted_tasks = torch.max(task_outputs, 1)
+                    epoch_task_accuracy += (predicted_tasks == gt_task).sum().item() / gt_task.size(0)
+                else:
+                    gaze_outputs = time_model(stacked_sal_preds, timeseries)
+                    gaze_loss = criterion_gaze(gaze_outputs, gt_gaze)
+                    loss = gaze_loss
 
                 # Backward pass and optimize
                 loss.backward()
                 optimizer.step()
-                epoch_loss += loss.item()
+                epoch_gaze_loss += gaze_loss.item()
                 
                 len_train_dataloader += 1
-                train_progress_bar.set_postfix(loss=epoch_loss / len_train_dataloader)
-        avg_epoch_loss = epoch_loss / len_train_dataloader
-        print(f"Epoch [{epoch+1}/{args.num_epochs}], Training Loss: {avg_epoch_loss:.4f}")
+                current_rmse = math.sqrt(epoch_gaze_loss / len_train_dataloader)
+                if is_tty:
+                    if args.use_task_output:
+                        train_progress_bar.set_postfix(mse=epoch_gaze_loss / len_train_dataloader, rmse=current_rmse, task_loss=epoch_task_loss / len_train_dataloader)
+                    else:
+                        train_progress_bar.set_postfix(mse=epoch_gaze_loss / len_train_dataloader, rmse=current_rmse)
+        
+        avg_epoch_gaze_loss = epoch_gaze_loss / len_train_dataloader
+        avg_epoch_gaze_rmse = math.sqrt(avg_epoch_gaze_loss)
+        avg_epoch_task_loss = epoch_task_loss / len_train_dataloader if args.use_task_output else 0.0
+        avg_epoch_task_accuracy = epoch_task_accuracy / len_train_dataloader if args.use_task_output else 0.0
+        
+        if args.use_task_output:
+            print(f"Epoch [{epoch+1}/{args.num_epochs}], Training Gaze MSE: {avg_epoch_gaze_loss:.4f}, RMSE: {avg_epoch_gaze_rmse:.4f}, Training Task Loss: {avg_epoch_task_loss:.4f}, Training Task Accuracy: {avg_epoch_task_accuracy:.4f}")
+        else:
+            print(f"Epoch [{epoch+1}/{args.num_epochs}], Training Gaze MSE: {avg_epoch_gaze_loss:.4f}, RMSE: {avg_epoch_gaze_rmse:.4f}")
 
         # Log the training loss to TensorBoard
-        writer.add_scalar("Training Loss", avg_epoch_loss, epoch)
+        writer.add_scalar("Training Gaze MSE", avg_epoch_gaze_loss, epoch)
+        writer.add_scalar("Training Gaze RMSE", avg_epoch_gaze_rmse, epoch)
+        if args.use_task_output:
+            writer.add_scalar("Training Task Loss", avg_epoch_task_loss, epoch)
+            writer.add_scalar("Training Task Accuracy", avg_epoch_task_accuracy, epoch)
 
         # Validation step
         time_model.eval()
-        val_loss = 0.0
+        val_gaze_loss = 0.0
+        val_task_loss = 0.0
+        val_task_accuracy = 0.0
         len_val_dataloader = 0
-        val_progress_bar =  tqdm(val_dataloader)
+        # Smart progress bar: Use tqdm for TTY, simple logger for files
+        val_progress_bar = tqdm(val_dataloader, mininterval=10.0, ascii=True, desc=f"Epoch {epoch+1} [Val]") if is_tty else val_dataloader
+        
         with torch.no_grad():
-            for batch in val_progress_bar:
+            for i, batch in enumerate(val_progress_bar):
                 if batch is None: continue
-                for images, timeseries, gt_gaze, _ in batch:
+                
+                # Manual logging for file-based runs
+                if not is_tty and i % 50 == 0:
+                    running_val_mse = val_gaze_loss / max(1, len_val_dataloader)
+                    running_val_rmse = math.sqrt(running_val_mse)
+                    if args.use_task_output:
+                        running_val_task_loss = val_task_loss / max(1, len_val_dataloader)
+                        running_val_task_acc = val_task_accuracy / max(1, len_val_dataloader)
+                        print(f"Epoch {epoch+1} [Val] - Batch {i}/{len(val_dataloader)} - Gaze MSE: {running_val_mse:.4f}, RMSE: {running_val_rmse:.4f}, Task Loss: {running_val_task_loss:.4f}, Task Acc: {running_val_task_acc:.4f}", flush=True)
+                    else:
+                        print(f"Epoch {epoch+1} [Val] - Batch {i}/{len(val_dataloader)} - Gaze MSE: {running_val_mse:.4f}, RMSE: {running_val_rmse:.4f}", flush=True)
+
+                for images, timeseries, gt_gaze, _, gt_task in batch:
                     
-                    images, timeseries, gt_gaze = (
+                    images, timeseries, gt_gaze, gt_task = (
                         images.to(device),
                         timeseries.to(device),
                         gt_gaze.to(device),
+                        gt_task.to(device),
                     )
                     
                     output_list = []
                     for batch_image in images:
                         batch_list = []
-                        for image in batch_image:
-                            output = unisal_model(image.unsqueeze(0))
-                            batch_list.append(output)
+                        if args.saliency_sampling > 1:
+                            sampled_indices = list(range(0, len(batch_image), args.saliency_sampling))
+                            for idx in sampled_indices:
+                                output = unisal_model(batch_image[idx].unsqueeze(0))
+                                for _ in range(args.saliency_sampling):
+                                    if len(batch_list) < len(batch_image):
+                                        batch_list.append(output)
+                        else:
+                            for image in batch_image:
+                                output = unisal_model(image.unsqueeze(0))
+                                batch_list.append(output)
                         output_list.append(torch.stack(batch_list))
 
                     # Stack along batch dimension (32)
                     stacked_sal_preds = torch.stack(output_list)
-                    outputs = time_model(stacked_sal_preds, timeseries)
-                
-                    # Forward pass
-                    loss = criterion(outputs, gt_gaze)
-                    val_loss += loss.item()
+                    
+                    if args.use_task_output:
+                        gaze_outputs, task_outputs = time_model(stacked_sal_preds, timeseries)
+                        gaze_loss = criterion_gaze(gaze_outputs, gt_gaze)
+                        task_loss = criterion_task(task_outputs, gt_task)
+                        val_gaze_loss += gaze_loss.item()
+                        val_task_loss += task_loss.item()
+
+                        _, predicted_tasks = torch.max(task_outputs, 1)
+                        val_task_accuracy += (predicted_tasks == gt_task).sum().item() / gt_task.size(0)
+                    else:
+                        gaze_outputs = time_model(stacked_sal_preds, timeseries)
+                        gaze_loss = criterion_gaze(gaze_outputs, gt_gaze)
+                        val_gaze_loss += gaze_loss.item()
+
                     len_val_dataloader += 1
-                    val_progress_bar.set_postfix(loss=val_loss / len_val_dataloader)
-        avg_val_loss = val_loss / len_val_dataloader
-        print(f"Epoch [{epoch+1}/{args.num_epochs}], Validation Loss: {avg_val_loss:.4f}")
+                    current_val_rmse = math.sqrt(val_gaze_loss / len_val_dataloader)
+                    if is_tty:
+                        if args.use_task_output:
+                            val_progress_bar.set_postfix(mse=val_gaze_loss / len_val_dataloader, rmse=current_val_rmse, task_loss=val_task_loss / len_val_dataloader)
+                        else:
+                            val_progress_bar.set_postfix(mse=val_gaze_loss / len_val_dataloader, rmse=current_val_rmse)
+                        
+        avg_val_gaze_loss = val_gaze_loss / len_val_dataloader
+        avg_val_gaze_rmse = math.sqrt(avg_val_gaze_loss)
+        avg_val_task_loss = val_task_loss / len_val_dataloader if args.use_task_output else 0.0
+        avg_val_task_accuracy = val_task_accuracy / len_val_dataloader if args.use_task_output else 0.0
+        
+        if args.use_task_output:
+            print(f"Epoch [{epoch+1}/{args.num_epochs}], Validation Gaze MSE: {avg_val_gaze_loss:.4f}, RMSE: {avg_val_gaze_rmse:.4f}, Validation Task Loss: {avg_val_task_loss:.4f}, Validation Task Accuracy: {avg_val_task_accuracy:.4f}")
+        else:
+            print(f"Epoch [{epoch+1}/{args.num_epochs}], Validation Gaze MSE: {avg_val_gaze_loss:.4f}, RMSE: {avg_val_gaze_rmse:.4f}")
         
         # Log the validation loss to TensorBoard
-        writer.add_scalar("Validation Loss", avg_val_loss, epoch)
+        writer.add_scalar("Validation Gaze MSE", avg_val_gaze_loss, epoch)
+        writer.add_scalar("Validation Gaze RMSE", avg_val_gaze_rmse, epoch)
+        if args.use_task_output:
+            writer.add_scalar("Validation Task Loss", avg_val_task_loss, epoch)
+            writer.add_scalar("Validation Task Accuracy", avg_val_task_accuracy, epoch)
 
         # Step the scheduler
-        scheduler.step(avg_val_loss)
+        scheduler.step(avg_val_gaze_loss)
         
         training_log = {
             "epoch": epoch+1,
-            "train_loss": avg_epoch_loss,
-            "val_loss": avg_val_loss,
+            "train_gaze_loss": avg_epoch_gaze_loss,
+            "train_gaze_rmse": avg_epoch_gaze_rmse,
+            "train_task_loss": avg_epoch_task_loss,
+            "train_task_accuracy": avg_epoch_task_accuracy,
+            "val_gaze_loss": avg_val_gaze_loss,
+            "val_gaze_rmse": avg_val_gaze_rmse,
+            "val_task_loss": avg_val_task_loss,
+            "val_task_accuracy": avg_val_task_accuracy,
             "timestamp": datetime.now().strftime("%Y%m%d_%H%M%S")
         }
         
         add_training_log(training_log, os.path.join(model_dir,exp_name,exp_name+'.json'))
         
         # Save the model if the validation loss is the best we've seen so far.
+        if args.use_task_output:
+            avg_val_loss = avg_val_gaze_loss + args.task_weight * avg_val_task_loss
+        else:
+            avg_val_loss = avg_val_gaze_loss
+            
         if avg_val_loss < best_val_loss:
             best_val_loss = avg_val_loss
             model_path = os.path.join(

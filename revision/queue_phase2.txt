@@ -1,0 +1,12 @@
+--name e2_dual20_s1 --task_weight 20 --seed 1
+--name e2_dual20_s2 --task_weight 20 --seed 2
+--name cv0_gaze --task_weight 0 --seed 0 --split_file /mnt/DataLake/AlienBackup/access/eht_gaze_prediction/revision/results/cv_fold0.json
+--name cv0_dual20 --task_weight 20 --seed 0 --split_file /mnt/DataLake/AlienBackup/access/eht_gaze_prediction/revision/results/cv_fold0.json
+--name cv1_gaze --task_weight 0 --seed 0 --split_file /mnt/DataLake/AlienBackup/access/eht_gaze_prediction/revision/results/cv_fold1.json
+--name cv1_dual20 --task_weight 20 --seed 0 --split_file /mnt/DataLake/AlienBackup/access/eht_gaze_prediction/revision/results/cv_fold1.json
+--name cv2_gaze --task_weight 0 --seed 0 --split_file /mnt/DataLake/AlienBackup/access/eht_gaze_prediction/revision/results/cv_fold2.json
+--name cv2_dual20 --task_weight 20 --seed 0 --split_file /mnt/DataLake/AlienBackup/access/eht_gaze_prediction/revision/results/cv_fold2.json
+--name cv3_gaze --task_weight 0 --seed 0 --split_file /mnt/DataLake/AlienBackup/access/eht_gaze_prediction/revision/results/cv_fold3.json
+--name cv3_dual20 --task_weight 20 --seed 0 --split_file /mnt/DataLake/AlienBackup/access/eht_gaze_prediction/revision/results/cv_fold3.json
+--name cv4_gaze --task_weight 0 --seed 0 --split_file /mnt/DataLake/AlienBackup/access/eht_gaze_prediction/revision/results/cv_fold4.json
+--name cv4_dual20 --task_weight 20 --seed 0 --split_file /mnt/DataLake/AlienBackup/access/eht_gaze_prediction/revision/results/cv_fold4.json

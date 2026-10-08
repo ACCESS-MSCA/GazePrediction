@@ -1,13 +1,12 @@
 import os
 import sys
+# Add project root to sys.path
+sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 import numpy as np
 import torch
 import coremltools as ct
-
-sys.path.append("..")
-
-import utils
+import core.utils as utils
 import torchinfo
 
 import warnings
