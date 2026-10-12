@@ -14,6 +14,26 @@ SPLITS = {
 }
 TASK_NAMES = ["Free Viewing", "Visual Search", "Saliency", "Track"]
 FPS = 30
+# DSAV360: head and gaze are recorded for the first 30 s of each video (6 clips of 5 s). The videos are
+# 34-60 s long and the processed clips beyond 30 s carry the last recorded sample (frozen head/gaze),
+# so only clips 1-6 are used.
+DSAV_MAX_CLIP = 6
+
+
+def clip_index(name):
+    """Clip number from a clip file name such as Video_4_User_64_Task_1_7.npz -> 7."""
+    return int(os.path.splitext(os.path.basename(str(name)))[0].rsplit("_", 1)[1])
+
+
+def keep_recorded(target, z):
+    """Drop DSAV360 windows from clips past the recorded 30 s. `z` is a per-window dict (eval_unified output)."""
+    if z is None or not str(target).startswith("dsav"):
+        return z
+    m = np.array([clip_index(c) <= DSAV_MAX_CLIP for c in z["clip"]])
+    if m.all():
+        return z
+    n = len(m)
+    return {k: (v[m] if isinstance(v, np.ndarray) and v.ndim > 0 and len(v) == n else v) for k, v in z.items()}
 
 
 def motion_features(h_az, h_el, dt=1.0 / FPS):
@@ -42,6 +62,8 @@ def build_windows(dataset, rec_dirs, past=15, future=20, stride=15, sal_sampling
     out = {k: [] for k in ["sal", "ts", "gt", "task", "user", "video", "rec", "clip", "f"]}
     for rec in rec_dirs:
         for npz in sorted(glob(os.path.join(root, rec, "*.npz"))):
+            if dataset == "dsav" and clip_index(npz) > DSAV_MAX_CLIP:
+                continue
             z = np.load(npz)
             n = int(z["n_meta"])
             sal = z["sal"]

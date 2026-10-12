@@ -6,18 +6,32 @@ Processed subset: videos 1–10 (of 85), 88 participants, 684 recordings (train 
 
 | model | condition | N | step10 | step20 | HMD step10 | HMD step20 |
 |---|---|---|---|---|---|---|
-| e1_gaze_s0 | mono | 4393 | 17.75 | 22.35 | 20.14 | 25.08 |
-| e1_gaze_s0 | stereo | 4296 | 16.99 | 21.89 | 19.71 | 25.25 |
-| e2_dual20_s0 | mono | 4393 | 17.89 | 22.40 | 20.14 | 25.08 |
-| e2_dual20_s0 | stereo | 4296 | 17.21 | 21.96 | 19.71 | 25.25 |
-| e1_dual100_s0 | mono | 4393 | 17.61 | 22.09 | 20.14 | 25.08 |
-| e1_dual100_s0 | stereo | 4296 | 16.91 | 21.60 | 19.71 | 25.25 |
-| base_hmd_cv | mono | 4393 | 16.87 | 22.28 | 20.14 | 25.08 |
-| base_hmd_cv | stereo | 4296 | 16.02 | 21.56 | 19.71 | 25.25 |
+| e1_gaze_s0 | mono | 2448 | 20.74 | 29.18 | 25.70 | 34.55 |
+| e1_gaze_s0 | stereo | 2496 | 18.74 | 27.32 | 24.57 | 34.10 |
+| e2_dual20_s0 | mono | 2448 | 20.78 | 29.16 | 25.70 | 34.55 |
+| e2_dual20_s0 | stereo | 2496 | 18.84 | 27.31 | 24.57 | 34.10 |
+| e1_dual100_s0 | mono | 2448 | 20.68 | 28.94 | 25.70 | 34.55 |
+| e1_dual100_s0 | stereo | 2496 | 18.83 | 27.12 | 24.57 | 34.10 |
+| base_hmd_cv | mono | 2448 | 19.84 | 29.53 | 25.70 | 34.55 |
+| base_hmd_cv | stereo | 2496 | 18.22 | 27.76 | 24.57 | 34.10 |
 
 ## Step-0 head–gaze offset at prediction time (great-circle, deg)
 
 | dataset | N windows | mean | median | 90th pct |
 |---|---|---|---|---|
 | eht | 11432 | 11.27 | 10.17 | 19.09 |
-| dsav | 8689 | 15.24 | 12.05 | 25.98 |
+| dsav | 4944 | 16.90 | 13.00 | 28.09 |
+
+## Stereo vs mono viewers, behaviour-aware lambda=20 (3 seeds)
+
+| horizon | mono | stereo |
+|---|---|---|
+| step 10 | 20.75 ± 0.04 | 18.83 ± 0.05 |
+| step 20 | 29.09 ± 0.09 | 27.28 ± 0.06 |
+
+## Head–gaze longitudinal offset, all recorded test frames (deg)
+
+| dataset | frames | mean signed | mean absolute |
+|---|---|---|---|
+| eht | 214350 | 1.59 | 7.53 |
+| dsav | 92700 | 1.04 | 13.71 |

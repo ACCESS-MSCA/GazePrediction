@@ -8,6 +8,8 @@ import json
 import argparse
 
 import numpy as np
+
+from cached_data import keep_recorded
 from scipy.stats import spearmanr, rankdata
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -21,7 +23,7 @@ def load(target, name):
     p = os.path.join(PW, f"{target}__{name}.npz")
     if not os.path.exists(p):
         return None
-    z = dict(np.load(p, allow_pickle=True))
+    z = keep_recorded(target, dict(np.load(p, allow_pickle=True)))
     if z["probs"].size:
         pr = np.clip(z["probs"], 1e-12, 1)
         z["entropy"] = -(pr * np.log(pr)).sum(1)

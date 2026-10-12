@@ -95,6 +95,7 @@ The revision re-trains and re-evaluates all models on participant-exclusive spli
   3. `eval_unified.py` (`eval_runs.sh`, `eval_cv.sh`) — per-window outputs: step-wise great-circle error, HMD-centre error, task probabilities.
   4. Analyses: `analyze.py` (horizon policies, entropy, risk–coverage), `seeds_summary.py`, `baselines.py` (constant-velocity head extrapolation, ridge eye–head model, saliency × head prior), `speed_policy.py` (head-speed horizon policy), `lobo_ood.py` (leave-one-task-out), `dsav_checks.py`.
   5. `make_paper_assets.py`, `make_fig2.py` — tables (LaTeX) and figures of the revised paper.
+- DSAV360: head and gaze are recorded for the first 30 s of each viewing (the videos are 34–60 s), so only clips 1–6 are used (`cached_data.DSAV_MAX_CLIP`; applied when windows are built and when stored per-window outputs are loaded).
 - Summary results: `revision/results/*.md` / `*.json`. Per-window outputs (~1 GB), checkpoints and logs are not tracked.
 - Data, cache and checkpoint locations are set as constants at the top of `cached_data.py`, `eval_unified.py` and `make_cv_folds.py`; adjust them to your setup.
 

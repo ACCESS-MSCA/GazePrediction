@@ -7,6 +7,8 @@ from collections import defaultdict
 
 import numpy as np
 
+from cached_data import keep_recorded
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 PW = os.path.join(HERE, "results", "per_window")
 TASKS = ["Free Viewing", "Visual Search", "Saliency", "Track"]
@@ -15,7 +17,7 @@ TARGETS = ["eht_test", "eht_isvc_holdout", "dsav_test"]
 
 def load(t, n):
     p = os.path.join(PW, f"{t}__{n}.npz")
-    return dict(np.load(p, allow_pickle=True)) if os.path.exists(p) else None
+    return keep_recorded(t, dict(np.load(p, allow_pickle=True))) if os.path.exists(p) else None
 
 
 def stats(z):
