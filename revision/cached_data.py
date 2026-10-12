@@ -14,9 +14,9 @@ SPLITS = {
 }
 TASK_NAMES = ["Free Viewing", "Visual Search", "Saliency", "Track"]
 FPS = 30
-# DSAV360: head and gaze are recorded for the first 30 s of each video (6 clips of 5 s). The videos are
-# 34-60 s long and the processed clips beyond 30 s carry the last recorded sample (frozen head/gaze),
-# so only clips 1-6 are used.
+# DSAV360: head and gaze are recorded for 30 s per viewing (6 clips of 5 s). The preprocessing now
+# stops there; this limit also guards against older processed data, whose clips beyond 30 s carry
+# the last recorded sample (frozen head/gaze).
 DSAV_MAX_CLIP = 6
 
 
@@ -70,9 +70,12 @@ def build_windows(dataset, rec_dirs, past=15, future=20, stride=15, sal_sampling
             h_az, h_el = z["horz_hmd_deg"], z["vert_hmd_deg"]
             g_az, g_el = z["giw_long"], z["giw_lat"]
             feats = motion_features(h_az, h_el)
+            valid = z["gaze_valid"] if "gaze_valid" in z.files else None
             for f in range(past, n - future, stride):
                 if f > len(sal):
                     continue
+                if valid is not None and not valid[f:f + future].all():
+                    continue  # gaze target interpolated across a gap in the gaze log (DSAV360)
                 idx = np.arange(f - past, f)
                 if sal_sampling > 1:  # emulate tools/evaluation.py saliency_sampling (repeat every Nth map)
                     idx = (f - past) + ((idx - (f - past)) // sal_sampling) * sal_sampling

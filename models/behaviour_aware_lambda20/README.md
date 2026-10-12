@@ -24,7 +24,7 @@ The model used in the journal extension, *Behaviour-Aware Gaze Prediction in Vir
 | | 333 ms | 666 ms | Task accuracy |
 |---|---|---|---|
 | EHTask test, endpoint error | 8.48 ± 0.05° | 11.99 ± 0.04° | 68.6 ± 0.3% |
-| DSAV360 zero-shot, endpoint error | 19.78 ± 0.05° | 28.18 ± 0.08° | – |
+| DSAV360 zero-shot, endpoint error | 15.59 ± 0.06° | 23.81 ± 0.11° | – |
 
 ## Loading
 

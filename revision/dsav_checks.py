@@ -63,7 +63,8 @@ for ds in ("eht", "dsav"):
             if ds == "dsav" and clip_index(f) > DSAV_MAX_CLIP:
                 continue
             z = np.load(f)
-            d.append(((z["giw_long"] - z["horz_hmd_deg"]) + 180) % 360 - 180)
+            dd = ((z["giw_long"] - z["horz_hmd_deg"]) + 180) % 360 - 180
+            d.append(dd[z["gaze_valid"]] if "gaze_valid" in z.files else dd)   # measured gaze only
     d = np.concatenate(d)
     out.append(f"| {ds} | {len(d)} | {d.mean():.2f} | {np.abs(d).mean():.2f} |")
 txt = "\n".join(out)

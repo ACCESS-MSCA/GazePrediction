@@ -146,6 +146,8 @@ def main():
                 user_id=str(first["user_id"]),
                 video_id=str(first["video_id"]),
                 n_meta=np.int64(len(meta)),
+                # DSAV360 only: whether the gaze of each frame is measured (not interpolated across a gap)
+                gaze_valid=np.array([bool(r.get("gaze_valid", True)) for r in meta]),
             )
 
 

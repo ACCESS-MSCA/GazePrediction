@@ -88,12 +88,23 @@ def generate_videos(video_path, df_merged, save_folder, seconds_per_split, targe
     
     metadata_list = []
     
+    pos, cur_idx, frame = 0, -1, None
     for i, (_, row) in enumerate(df_merged.iterrows()):
         fnumber = int(row['orig_frame'])
-        cap.set(cv2.CAP_PROP_POS_FRAMES, fnumber)
-        res, frame = cap.read()
-        if not res:
-            continue
+        # Frame indices are non-decreasing: read the video sequentially (seeking every frame of a
+        # 4K H.264 video is very slow) and seek only for backward or long forward jumps.
+        if fnumber != cur_idx:
+            if fnumber < pos or fnumber - pos > 600:
+                cap.set(cv2.CAP_PROP_POS_FRAMES, fnumber)
+                pos = fnumber
+            while pos < fnumber:
+                cap.grab()
+                pos += 1
+            res, frame = cap.read()
+            pos += 1
+            if not res:
+                continue
+            cur_idx = fnumber
             
         horz_hmd_deg = row['hmd_long_deg']
         vert_hmd_deg = row['hmd_lat_deg']
@@ -137,6 +148,7 @@ def generate_videos(video_path, df_merged, save_folder, seconds_per_split, targe
             "vert_hmd_deg": vert_hmd_deg,
             "giw_long": giw_long_deg,
             "giw_lat": giw_lat_deg,
+            "gaze_valid": bool(row['gaze_valid']),
             "eih_x": 0, "eih_y": 0,
             "cropped_frame_filename": save_filename,
             "video_id": vd_id, "user_id": sbj_id, "task_id": display_task_id,
@@ -162,6 +174,19 @@ def generate_videos(video_path, df_merged, save_folder, seconds_per_split, targe
             os.remove(f"{save_path}/{save_filename}.mp4")
     cap.release()
 
+GAZE_MAX_GAP = 0.1   # s: a 30 Hz sample counts as measured if a raw gaze sample lies this close
+
+
+def _shown_frame_fit(df_gaze):
+    """Linear fit (frame = a * t + b) of the video frame displayed at each gaze sample ('frame' column).
+    The last frame is held after the stimulus ends, so those samples are left out of the fit."""
+    g = df_gaze[['t', 'frame']].sort_values('t')
+    m = g['frame'] < g['frame'].max()
+    if m.sum() < 2:
+        m = np.ones(len(g), bool)
+    return np.polyfit(g['t'].values[m], g['frame'].values[m].astype(float), 1)
+
+
 def sync_and_smooth(df_head, df_gaze, video_path, target_fps=30):
     cap = cv2.VideoCapture(video_path)
     orig_fps = cap.get(cv2.CAP_PROP_FPS)
@@ -177,13 +202,17 @@ def sync_and_smooth(df_head, df_gaze, video_path, target_fps=30):
     
     # Critical: Use a common start time to preserve relative lag/sync
     # Assumption: Both trackers share a common clock (system time)
+    if abs(df_head['t'].min() - df_gaze['t'].min()) > 60:
+        return None   # head and gaze logs are not on a common clock (broken timestamps)
     t_global_start = min(df_head['t'].min(), df_gaze['t'].min())
     
     df_head['t'] = df_head['t'] - t_global_start
     df_gaze['t'] = df_gaze['t'] - t_global_start
     
-    duration = (total_frames - 1) / orig_fps
-    target_times = np.arange(0, duration, 1.0 / target_fps)
+    # Head and gaze are recorded for ~30 s per viewing, shorter than most videos (34-60 s):
+    # sample only the recorded period, in whole frames of the target rate.
+    t_end = min(df_head['t'].max(), df_gaze['t'].max())
+    target_times = np.arange(int(np.floor(t_end * target_fps))) / target_fps
     
     def interpolate_and_smooth_spherical(df, times):
         # 1. Convert to XYZ
@@ -219,8 +248,16 @@ def sync_and_smooth(df_head, df_gaze, video_path, target_fps=30):
         't': target_times,
         'u_head': u_head, 'v_head': v_head,
         'u_gaze': u_gaze, 'v_gaze': v_gaze,
-        'orig_frame': (target_times * orig_fps).round().astype(int)
+        # Video frame actually shown at each time, from the gaze log ('frame' column). The 30 s stimulus
+        # segment does not always start at the first video frame (videos 3, 5, 8 and 10 start 1-7 s in),
+        # so the frame cannot be derived from time alone.
+        'orig_frame': np.round(np.polyval(_shown_frame_fit(df_gaze), target_times)).astype(int).clip(0, total_frames - 1)
     })
+    # Gaze is missing during blinks and tracking losses; interpolated values there are not measurements.
+    tg = np.sort(df_gaze['t'].values)
+    i = np.clip(np.searchsorted(tg, target_times), 1, len(tg) - 1)
+    nearest = np.minimum(np.abs(tg[i] - target_times), np.abs(tg[i - 1] - target_times))
+    df_sync['gaze_valid'] = nearest <= GAZE_MAX_GAP
     
     df_sync['hmd_long_deg'], df_sync['hmd_lat_deg'] = uv_to_deg(df_sync['u_head'], df_sync['v_head'])
     df_sync['gaze_long_deg'], df_sync['gaze_lat_deg'] = uv_to_deg(df_sync['u_gaze'], df_sync['v_gaze'])
@@ -252,6 +289,9 @@ def process_single_task(task_data, extracted_path, save_folder, seconds_per_spli
     df_gaze = df_gaze[df_gaze['id'] == user_id].copy()
     
     df_sync = sync_and_smooth(df_head, df_gaze, video_path, target_fps)
+    if df_sync is None:
+        print(f"Skipping video {video_id} user {user_id}: head and gaze timestamps do not share a clock")
+        return
     df_sync['video_id'] = video_id
     df_sync['user_id'] = user_id
     
