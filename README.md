@@ -39,7 +39,7 @@ This repository provides:
   - `visualize_*.py`, `inspect_*.py`, `check_dsav_mapping.py`, `test_dsav_mapping.py` — plots and dataset checks.
 - `revision/` — journal-revision experiments (see below).
 - `unisal/` — bundled UNISAL project with training and saliency tools.
-- `models/` — UNISAL weights and exported CoreML models.
+- `models/` — UNISAL weights, exported CoreML models, and the behaviour-aware model of the journal extension (`models/behaviour_aware_lambda20/`, λ = 20, three seeds; see its README).
 - `coreml-gazePred/` — Xcode project and example app for CoreML model validation.
 - `imgs/` — demo GIFs and images used in README/visualization.
 
